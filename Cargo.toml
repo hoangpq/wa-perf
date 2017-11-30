@@ -1,0 +1,6 @@
+[package]
+name = "sample-wa"
+version = "0.1.0"
+authors = ["hoangpp <pquochoang2007@gmail.com>"]
+
+[dependencies]
