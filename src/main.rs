@@ -2,12 +2,6 @@ use std::mem;
 use std::ffi::CString;
 use std::os::raw::{c_char, c_void};
 
-
-#[no_mangle]
-pub extern fn get_number(n: i32) -> i32 {
-    return n + 27;
-}
-
 #[no_mangle]
 pub extern fn fibonacci(x: i32) -> i32 {
     if x <= 2 {
@@ -52,12 +46,9 @@ pub fn fact_str(n: u32) -> *mut c_char {
 }
 
 #[no_mangle]
-pub fn get_array_data(data: *mut [i32]) -> [i32; 3] {
-    return [1, 2, 3];
+pub fn get_array_data(data: *mut i32) -> *mut i32 {
+    return data;
 }
 
 // This is the `main` thread
-fn main() {
-    // let res: u32 = map_reduce();
-    // println!("{}", res)
-}
+fn main() {}
