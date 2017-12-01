@@ -1,0 +1,11 @@
+{
+  "name": "wa-perf",
+  "version": "1.0.0",
+  "scripts": {
+    "serve": "./wa-build.sh && http-serve"
+  },
+  "main": "index.js",
+  "repository": "https://github.com/hoangpq/wa-perf.git",
+  "author": "Hoang Phan <pquochoang2007@gmail.com>",
+  "license": "MIT"
+}
