@@ -4,3 +4,4 @@ version = "0.1.0"
 authors = ["hoangpp <pquochoang2007@gmail.com>"]
 
 [dependencies]
+lazy_static = "1.0"
