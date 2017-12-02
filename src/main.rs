@@ -46,8 +46,35 @@ pub fn fact_str(n: u32) -> *mut c_char {
 }
 
 #[no_mangle]
-pub fn get_array_data(data: *mut i32) -> *mut i32 {
-    return data;
+pub extern "C" fn get_array_data(data: &mut [u8]) -> Vec<u8> {
+    let mut i = 0;
+    while i < data.len() {
+        data[i] = 255 - data[i];
+        data[i + 1] = 255 - data[i + 1];
+        data[i + 2] = 255 - data[i + 2];
+        data[i + 3] = 255;
+        i = i + 4
+    }
+    data.iter().cloned().collect()
+}
+
+#[no_mangle]
+pub fn mutate_array(data: *mut Vec<i32>, len: usize) -> Vec<u8> {
+    /*for offset in 0..len {
+        unsafe { println!("Rust - value in array: {:?}", *data.offset(offset)); }
+    }*/
+    let mut user_data;
+    unsafe {
+        user_data = Vec::from_raw_parts(
+            data as *mut u8, len, len
+        );
+    }
+    for i in 0..len {
+        user_data[i] += 1;
+    }
+    // println!("{:?}", user_data[0]);
+    // std::mem::forget(user_data);
+    return user_data
 }
 
 // This is the `main` thread

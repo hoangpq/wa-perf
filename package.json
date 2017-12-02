@@ -7,5 +7,12 @@
   "main": "index.js",
   "repository": "https://github.com/hoangpq/wa-perf.git",
   "author": "Hoang Phan <pquochoang2007@gmail.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.2",
+    "babel-preset-env": "^1.6.1",
+    "text-encoding": "^0.6.4",
+    "webpack": "^3.9.1"
+  }
 }
