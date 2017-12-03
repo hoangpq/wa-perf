@@ -1,5 +1,5 @@
 use std::mem;
-use std::ffi::CString;
+use std::ffi::{CString, CStr};
 use std::os::raw::{c_char, c_void};
 
 #[no_mangle]
@@ -17,6 +17,13 @@ pub extern "C" fn alloc(size: usize) -> *mut c_void {
     let ptr = buf.as_mut_ptr();
     mem::forget(buf);
     return ptr as *mut c_void;
+}
+
+#[no_mangle]
+pub extern "C" fn dealloc(ptr: *mut c_void, cap: usize) {
+    unsafe  {
+        let _buf = Vec::from_raw_parts(ptr, 0, cap);
+    }
 }
 
 #[no_mangle]
@@ -46,36 +53,60 @@ pub fn fact_str(n: u32) -> *mut c_char {
 }
 
 #[no_mangle]
-pub extern "C" fn get_array_data(data: &mut [u8]) -> Vec<u8> {
+pub extern "C" fn filter(data: *mut u8, len: usize) -> i32 {
+    let mut pixels;
     let mut i = 0;
-    while i < data.len() {
-        data[i] = 255 - data[i];
-        data[i + 1] = 255 - data[i + 1];
-        data[i + 2] = 255 - data[i + 2];
-        data[i + 3] = 255;
-        i = i + 4
+    unsafe {
+        pixels = Vec::from_raw_parts(
+            data as *mut u8, len, len
+        );
+        while i < len {
+            pixels[i] = 255 - pixels[i];
+            pixels[i + 1] = 255 - pixels[i + 1];
+            pixels[i + 2] = 255 - pixels[i + 2];
+            pixels[i + 3] = 255;
+            i = i + 4
+        }
     }
-    data.iter().cloned().collect()
+    let _len = pixels.len() as i32;
+    std::mem::forget(pixels);
+    _len
 }
 
 #[no_mangle]
-pub fn mutate_array(data: *mut Vec<i32>, len: usize) -> Vec<u8> {
-    /*for offset in 0..len {
-        unsafe { println!("Rust - value in array: {:?}", *data.offset(offset)); }
-    }*/
+pub fn mutate_array(data: *mut u32, len: usize) {
     let mut user_data;
     unsafe {
         user_data = Vec::from_raw_parts(
-            data as *mut u8, len, len
+            data as *mut u32, len, len
         );
     }
     for i in 0..len {
         user_data[i] += 1;
     }
-    // println!("{:?}", user_data[0]);
-    // std::mem::forget(user_data);
-    return user_data
+    std::mem::forget(user_data);
+}
+
+#[no_mangle]
+pub extern "C" fn mutate_pointer(data: *mut c_char, len: usize) {
+    let mut user_data;
+    /*unsafe {
+        let data = CStr::from_ptr(data);
+    }*/
+    unsafe {
+        user_data = Vec::from_raw_parts(
+            data as *mut c_char,
+            len,
+            len
+        );
+        for i in 0..len {
+            user_data[i] += 1;
+        }
+    }
+    std::mem::forget(user_data);
 }
 
 // This is the `main` thread
-fn main() {}
+fn main() {
+    println!("Hello World from Rust")
+}

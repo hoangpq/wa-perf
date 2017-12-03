@@ -1,6 +1,6 @@
-const { ensure, unimplemented } = require("./utils");
-const { newSlice, extractSlice, getSliceData, getStr, POINTER_WIDTH } = require("./wasm-io");
-const { TextDecoder, TextEncoder } = require("text-encoding");
+const {ensure, unimplemented} = require("./utils");
+const {newSlice, extractSlice, getSliceData, getStr, POINTER_WIDTH} = require("./wasm-io");
+const {TextDecoder, TextEncoder} = require("text-encoding");
 
 /**
  * @typedef {number} Pointer A pointer into WASM memory
@@ -19,7 +19,7 @@ const typeConversions = {
       ensure(data instanceof Uint8Array, "Can only use `Uint8Array` as `&[u8]`");
 
       // @ts-ignore -- yes accessing these exports works
-      const { alloc, memory } = exports;
+      const {alloc, memory} = exports;
       ensure(alloc, "You need to export an `alloc` function to get strings from WASM");
       ensure(memory, "You need to export the main memory to get strings from WASM");
 
@@ -32,7 +32,7 @@ const typeConversions = {
      */
     ret(data, exports) {
       // @ts-ignore -- yes accessing these exports works
-      const { memory } = exports;
+      const {memory} = exports;
       ensure(memory, "You need to export the main memory to pass strings to WASM");
       const [ptr, len] = extractSlice(memory, data);
       return getSliceData(memory, ptr, len);
@@ -44,7 +44,7 @@ const typeConversions = {
      */
     outParam(args, exports) {
       // @ts-ignore -- yes accessing these exports works
-      const { alloc, memory } = exports;
+      const {alloc, memory} = exports;
       ensure(alloc, "You need to export an `alloc` function to get strings from WASM");
       ensure(memory, "You need to export the main memory to get strings from WASM");
 
@@ -62,7 +62,7 @@ const typeConversions = {
       ensure(typeof data === "string", "Can only use `Uint8Array` as `&[u8]`");
 
       // @ts-ignore -- yes accessing these exports works
-      const { alloc, memory } = exports;
+      const {alloc, memory} = exports;
       ensure(alloc, "You need to export an `alloc` function to get strings from WASM");
       ensure(memory, "You need to export the main memory to get strings from WASM");
 
@@ -78,7 +78,7 @@ const typeConversions = {
      */
     ret(data, exports) {
       // @ts-ignore -- yes accessing these exports works
-      const { memory } = exports;
+      const {memory} = exports;
       ensure(memory, "You need to export the main memory to pass strings to WASM");
       const [ptr, len] = extractSlice(memory, data);
       return getStr(memory, ptr, len);
@@ -90,7 +90,7 @@ const typeConversions = {
      */
     outParam(args, exports) {
       // @ts-ignore -- yes accessing these exports works
-      const { alloc, memory } = exports;
+      const {alloc, memory} = exports;
       ensure(alloc, "You need to export an `alloc` function to get strings from WASM");
       ensure(memory, "You need to export the main memory to get strings from WASM");
 
@@ -124,7 +124,7 @@ const typeConversions = {
      */
     arg(data, exports) {
       // @ts-ignore -- yes accessing these exports works
-      const { alloc, memory } = exports;
+      const {alloc, memory} = exports;
       ensure(alloc, "You need to export an `alloc` function to pass strings to WASM");
       ensure(memory, "You need to export the main memory to pass strings to WASM");
       ensure(typeof data === "string", "Can only allocate a string for, well, a string");
@@ -149,13 +149,15 @@ const typeConversions = {
      */
     ret(ptr, exports) {
       // @ts-ignore -- yes accessing these exports works
-      const { memory } = exports;
+      const {memory} = exports;
       ensure(memory, "You need to export the main memory to pass strings to WASM");
 
-      const collectCString = function*() {
+      const collectCString = function* () {
         const memView = new Uint8Array(memory.buffer);
         while (memView[ptr] !== 0) {
-          if (memView[ptr] === undefined) { throw new Error("Tried to read undef mem"); }
+          if (memView[ptr] === undefined) {
+            throw new Error("Tried to read undef mem");
+          }
           yield memView[ptr];
           ptr += 1;
         }
@@ -183,7 +185,7 @@ const typeConversions = {
      */
     ret(data, exports) {
       // @ts-ignore -- yes accessing these exports works
-      const { memory } = exports;
+      const {memory} = exports;
       ensure(memory, "You need to export the main memory to pass strings to WASM");
       // Actually, just read it like a slice, we copy it anyway, so the capacity doesn't matter
       const [ptr, len] = extractSlice(memory, data);
@@ -196,10 +198,56 @@ const typeConversions = {
      */
     outParam(args, exports) {
       // @ts-ignore -- yes accessing these exports works
-      const { alloc, memory } = exports;
+      const {alloc, memory} = exports;
       ensure(alloc, "You need to export an `alloc` function to get strings from WASM");
       ensure(memory, "You need to export the main memory to get strings from WASM");
 
+      const ptr = alloc(3 * POINTER_WIDTH);
+      args.unshift(ptr);
+      return ptr;
+    },
+  },
+  "Vec<i32>": {
+    /**
+     * @param {Uint8Array} data
+     * @param {WebAssembly.Module} exports
+     */
+    arg(data, exports) {
+      ensure(data instanceof Uint32Array, "Can only use `Uint8Array` as `&[u8]`");
+
+      // @ts-ignore -- yes accessing these exports works
+      const {alloc, memory} = exports;
+      ensure(alloc, "You need to export an `alloc` function to get strings from WASM");
+      ensure(memory, "You need to export the main memory to get strings from WASM");
+
+      return newSlice(memory, alloc, data);
+    },
+    /**
+     * @param {Pointer} data
+     * @param {WebAssembly.Module} exports
+     * @return {Uint8Array}
+     */
+    ret(data, exports) {
+
+      const POINTER_WIDTH = 32 / 8;
+
+      // @ts-ignore -- yes accessing these exports works
+      const {memory} = exports;
+      ensure(memory, "You need to export the main memory to pass strings to WASM");
+      // Actually, just read it like a slice, we copy it anyway, so the capacity doesn't matter
+      const [ptr, len] = extractSlice(memory, data);
+      return getSliceData(memory, ptr, len);
+    },
+    /**
+     * @param {Array<any>} args
+     * @param {WebAssembly.Module} exports
+     * @return {Pointer}
+     */
+    outParam(args, exports) {
+      // @ts-ignore -- yes accessing these exports works
+      const {alloc, memory} = exports;
+      ensure(alloc, "You need to export an `alloc` function to get strings from WASM");
+      ensure(memory, "You need to export the main memory to get strings from WASM");
       const ptr = alloc(3 * POINTER_WIDTH);
       args.unshift(ptr);
       return ptr;
@@ -214,7 +262,7 @@ const typeConversions = {
       ensure(data instanceof Uint8Array, "Can only use `Uint8Array` as `&[u8]`");
 
       // @ts-ignore -- yes accessing these exports works
-      const { alloc, memory } = exports;
+      const {alloc, memory} = exports;
       ensure(alloc, "You need to export an `alloc` function to get strings from WASM");
       ensure(memory, "You need to export the main memory to get strings from WASM");
 
@@ -227,7 +275,7 @@ const typeConversions = {
      */
     ret(data, exports) {
       // @ts-ignore -- yes accessing these exports works
-      const { memory } = exports;
+      const {memory} = exports;
       ensure(memory, "You need to export the main memory to pass strings to WASM");
       // Actually, just read it like a slice, we copy it anyway, so the capacity doesn't matter
       const [ptr, len] = extractSlice(memory, data);
@@ -240,7 +288,7 @@ const typeConversions = {
      */
     outParam(args, exports) {
       // @ts-ignore -- yes accessing these exports works
-      const { alloc, memory } = exports;
+      const {alloc, memory} = exports;
       ensure(alloc, "You need to export an `alloc` function to get strings from WASM");
       ensure(memory, "You need to export the main memory to get strings from WASM");
 

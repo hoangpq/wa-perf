@@ -1,5 +1,5 @@
-const { info, trace, debug, ensure } = require("./utils");
-const { TextDecoder, TextEncoder } = require("text-encoding");
+const {info, trace, debug, ensure} = require("./utils");
+const {TextDecoder, TextEncoder} = require("text-encoding");
 
 /**
  * @typedef {number} Pointer A pointer into WASM memory
@@ -48,7 +48,7 @@ function extractSlice(memory, inPointer) {
   /**
    * @param {number} ptr
    */
-  const getI32 = function(ptr) {
+  const getI32 = function (ptr) {
     return new Uint8Array(memory.buffer).slice(ptr, ptr + POINTER_WIDTH);
   };
 
@@ -93,10 +93,12 @@ function getSliceData(memory, pointer, length) {
    * @param {Pointer} ptr
    * @param {number} len
    */
-  const getData = function*(ptr, len) {
+  const getData = function* (ptr, len) {
     const memView = new Uint8Array(memory.buffer);
     for (let index = 0; index < len; index++) {
-      if (memView[ptr] === undefined) { throw new Error(`Tried to read undef mem at ${ptr}`); }
+      if (memView[ptr] === undefined) {
+        throw new Error(`Tried to read undef mem at ${ptr}`);
+      }
       yield memView[ptr + index];
     }
   };
