@@ -55,9 +55,11 @@ function loadCanvas(dataURL, module) {
     });
 
     function render(pixel_size, x0, y0) {
+      console.time('mandelbrot');
       module.mandelbrot(buffer.byteOffset, buffer.length, canvas.width, canvas.height, pixel_size, x0, y0);
       imgData.data.set(buffer);
       context.putImageData(imgData, 0, 0);
+      console.timeEnd('mandelbrot');
     }
 
     // module.dealloc(mPtr, bufferLength);
