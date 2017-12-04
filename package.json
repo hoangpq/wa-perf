@@ -2,7 +2,9 @@
   "name": "wa-perf",
   "version": "1.0.0",
   "scripts": {
-    "serve": "./wa-build.sh && http-serve"
+    "init": "./init-project",
+    "serve": "./cargo-build.sh && webpack-dev-server",
+    "build": "./cargo-build.sh"
   },
   "main": "index.js",
   "repository": "https://github.com/hoangpq/wa-perf.git",
@@ -19,7 +21,14 @@
     "babel-preset-es2015": "^6.24.1",
     "babel-preset-stage-0": "^6.24.1",
     "babel-preset-stage-1": "^6.24.1",
+    "css-loader": "^0.28.7",
+    "node-sass": "^4.7.2",
+    "sass-loader": "^6.0.6",
+    "style-loader": "^0.19.0",
     "text-encoding": "^0.6.4",
     "webpack": "^3.9.1"
+  },
+  "devDependencies": {
+    "webpack-dev-server": "^2.9.5"
   }
 }

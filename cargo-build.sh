@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
 cargo +nightly build --target wasm32-unknown-unknown --release
-cp target/wasm32-unknown-unknown/release/sample-wa.wasm ./
-wasm-gc sample-wa.wasm hello.wasm
+cp target/wasm32-unknown-unknown/release/sample-wa.wasm ./app/
+wasm-gc ./app/sample-wa.wasm ./app/hello.wasm
+rm ./app/sample-wa.wasm

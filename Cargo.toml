@@ -1,8 +1,9 @@
 [package]
 name = "sample-wa"
 version = "0.1.0"
-authors = ["hoangpp <pquochoang2007@gmail.com>"]
+authors = ["hoangpq <pquochoang2007@gmail.com>"]
 
 [dependencies]
 lazy_static = "1.0"
 sha1 = "0.2.0"
+itertools = "*"
