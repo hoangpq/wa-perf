@@ -1,6 +1,7 @@
 // global style
 require('./style.scss');
 const wrap = require('../wasm/wrap');
+const mandelbrot = require('./mandelbrot').default;
 
 function fibonacci(x) {
   if (x <= 2) {
@@ -56,12 +57,19 @@ function loadCanvas(dataURL, module) {
 
     function render(pixel_size, x0, y0) {
       console.time('mandelbrot');
-      module.mandelbrot(buffer.byteOffset, buffer.length, canvas.width, canvas.height, pixel_size, x0, y0);
-      imgData.data.set(buffer);
+      // module.mandelbrot(buffer.byteOffset, buffer.length, canvas.width, canvas.height, pixel_size, x0, y0);
+
+      let bufSize = canvas.width * canvas.height * 4;
+      let arr = new Uint8ClampedArray(bufSize);
+      mandelbrot(arr, canvas.width, canvas.height, pixel_size, x0, y0);
+
+      console.log(arr);
+
+      // imgData.data.set(buffer);
+      imgData.data.set(arr);
       context.putImageData(imgData, 0, 0);
       console.timeEnd('mandelbrot');
     }
-
     // module.dealloc(mPtr, bufferLength);
   };
   imageObj.src = dataURL;
