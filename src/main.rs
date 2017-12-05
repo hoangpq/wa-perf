@@ -115,7 +115,32 @@ pub fn mandelbrot(buffer: *mut u8, len: usize, width: f64, height: f64, pixel_si
     _mandelbrot(buffer, width as i64, height as i64, pixel_size, x0, y0);
 }
 
+pub struct Color {
+    red: u8,
+    green: u8,
+    blue: u8
+}
+
+pub fn _generate_palette() -> Vec<Color> {
+    let mut palette: Vec<Color> = Vec::with_capacity(255);
+    let mut roffset = 24;
+    let mut goffset = 16;
+    let mut boffset = 0;
+    for i in 0..256 {
+        palette.push(Color { red: roffset, green: goffset, blue: boffset });
+        if i < 64 {
+            roffset += 3;
+        } else if i < 128 {
+            goffset += 3;
+        } else if i < 192 {
+            boffset += 3;
+        }
+    }
+    return palette;
+}
+
 pub fn _mandelbrot(buffer: &mut [u8], width: i64, height: i64, pixel_size: f64, x0: f64, y0: f64) {
+    let palette: Vec<Color> = _generate_palette();
     iproduct!((0..width), (0..height)).foreach(|(i, j)| {
         let cr = x0 + pixel_size * (i as f64);
         let ci = y0 + pixel_size * (j as f64);
@@ -130,16 +155,24 @@ pub fn _mandelbrot(buffer: &mut [u8], width: i64, height: i64, pixel_size: f64, 
             })
             .count();
         let k = cmp::min(255, k) as u8;
+        let idx = (4 * (j * width + i)) as usize;
+        let color: Color = palette[k as usize];
+        /*buffer[idx] = 255 - k;
+        buffer[idx + 1] = 255 - k;
+        buffer[idx + 2] = 255 - k;
+        buffer[idx + 3] = 255;*/
 
-        let idx = (j * width + i) as usize;
-        buffer[4 * idx] = 255 - k;
-        buffer[4 * idx + 1] = 255 - k;
-        buffer[4 * idx + 2] = 255 - k;
-        buffer[4 * idx + 3] = 255;
+
+
+        buffer[idx] = color.red;
+        buffer[idx + 1] = color.green;
+        buffer[idx + 2] = color.blue;
+        buffer[idx + 3] = 255;
     });
 }
 
 // This is the `main` thread
 fn main() {
-    println!("Hello World from Rust")
+    let palette = _generate_palette();
+    println!("Hello World from Rust");
 }

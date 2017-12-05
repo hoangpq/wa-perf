@@ -3,75 +3,46 @@ require('./style.scss');
 const wrap = require('../wasm/wrap');
 const mandelbrot = require('./mandelbrot').default;
 
-function fibonacci(x) {
-  if (x <= 2) {
-    return 1;
-  } else {
-    return fibonacci(x - 1) + fibonacci(x - 2);
-  }
-}
-
 function loadCanvas(dataURL, module) {
-  const canvas = document.getElementById('myCanvas');
-  const context = canvas.getContext('2d');
+  const canvasWA = document.getElementById('canvas1');
+  const contextWA = canvasWA.getContext('2d');
+
+  const canvasJS = document.getElementById('canvas2');
+  const contextJS = canvasJS.getContext('2d');
+
   // load image from data url
   const imageObj = new Image();
   imageObj.onload = function () {
-    // context.drawImage(this, 0, 0);
-    const imgData = context.getImageData(0, 0, canvas.width, canvas.height);
-    // create buffer to hold data
-    /*const ptr = newArray(module, data);
-    module.filter(ptr, data.length);
-    const uInt8 = new Uint8Array(getValue(module, ptr, data.length));
-    for (let i = 0; i < data.length; i++) {
-      imgData.data[i] = uInt8[i];
-    }
-    // dealloc pointer
-    module.dealloc(ptr, data.length);*/
 
-    // context.putImageData(imgData, 0, 0);
-    /*for (let i = 0; i < imgData.data.length; i += 4) {
-      imgData.data[i] = 255 - imgData.data[i];
-      imgData.data[i + 1] = 255 - imgData.data[i + 1];
-      imgData.data[i + 2] = 255 - imgData.data[i + 2];
-      imgData.data[i + 3] = 255;
-    }*/
-
-    // create buffer
-    let bufferLength = canvas.width * canvas.height * 4;
-    let mPtr = module.alloc(bufferLength);
-    let buffer = new Uint8ClampedArray(module.memory.buffer, mPtr, bufferLength);
+    const imgDataWA = contextWA.getImageData(0, 0, canvasWA.width, canvasWA.height);
+    const imgDataJS = contextJS.getImageData(0, 0, canvasJS.width, canvasJS.height);
 
     const pixel_size = 0.005;
     const x0 = -2.0;
     const y0 = -1.0;
-    render(pixel_size, x0, y0);
 
-    document.querySelector('#render-btn').addEventListener('click', function (e) {
-      e.stopPropagation();
-      const pixel_size = parseFloat(document.querySelector('#pixel_size').value);
-      const x0 = parseFloat(document.querySelector('#x0').value);
-      const y0 = parseFloat(document.querySelector('#y0').value);
-      render(pixel_size, x0, y0);
-    });
+    // render by WA
+    let bufferLength = canvasWA.width * canvasWA.height * 4;
+    let mPtr = module.alloc(bufferLength);
+    let buffer = new Uint8ClampedArray(module.memory.buffer, mPtr, bufferLength);
+    console.time('Web Assembly');
+    module.mandelbrot(buffer.byteOffset, buffer.length, canvasWA.width, canvasWA.height, pixel_size, x0, y0);
+    imgDataWA.data.set(buffer);
+    contextWA.putImageData(imgDataWA, 0, 0);
+    console.timeEnd('Web Assembly');
+    module.dealloc(mPtr, bufferLength);
 
-    function render(pixel_size, x0, y0) {
-      console.time('mandelbrot');
-      // module.mandelbrot(buffer.byteOffset, buffer.length, canvas.width, canvas.height, pixel_size, x0, y0);
-
-      let bufSize = canvas.width * canvas.height * 4;
-      let arr = new Uint8ClampedArray(bufSize);
-      mandelbrot(arr, canvas.width, canvas.height, pixel_size, x0, y0);
-
-      console.log(arr);
-
-      // imgData.data.set(buffer);
-      imgData.data.set(arr);
-      context.putImageData(imgData, 0, 0);
-      console.timeEnd('mandelbrot');
-    }
+    // render by JS
+    let bufSize = canvasJS.width * canvasJS.height * 4;
+    let jsBuffer = new Uint8ClampedArray(bufSize);
+    console.time('Javascript');
+    mandelbrot(jsBuffer, canvasJS.width, canvasJS.height, pixel_size, x0, y0);
+    imgDataJS.data.set(jsBuffer);
+    contextJS.putImageData(imgDataJS, 0, 0);
+    console.timeEnd('Javascript');
     // module.dealloc(mPtr, bufferLength);
   };
+
   imageObj.src = dataURL;
 }
 
@@ -83,7 +54,6 @@ fetch('hello.wasm')
       tableBase: 0,
       memory: new WebAssembly.Memory({
         initial: 256,
-        maximum: 4096,
       }),
       table: new WebAssembly.Table({
         initial: 0,
