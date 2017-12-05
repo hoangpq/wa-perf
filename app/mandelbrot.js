@@ -37,22 +37,24 @@ function calculate(cr, ci) {
 }
 
 export default function mandelbrot(buffer, width, height, pixel_size, x0, y0) {
-  // generatePalette();
+  generatePalette();
   for (let i = 0; i < width; i++) {
     for (let j = 0; j < height; j++) {
       let cr = x0 + pixel_size * i;
       let ci = y0 + pixel_size * j;
       let pix = calculate(cr, ci);
       let idx = (j * width + i) * 4;
-      // let color = palette[pix];
-      buffer[idx] = 255 - pix;
+      let color = palette[pix];
+
+      /*buffer[idx] = 255 - pix;
       buffer[idx + 1] = 255 - pix;
       buffer[idx + 2] = 255 - pix;
-      buffer[idx + 3] = 255;
-      /*buffer[idx] = color.r;
+      buffer[idx + 3] = 255;*/
+
+      buffer[idx] = color.r;
       buffer[idx + 1] = color.g;
       buffer[idx + 2] = color.b;
-      buffer[idx + 3] = 255;*/
+      buffer[idx + 3] = 255;
     }
   }
 }

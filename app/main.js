@@ -40,7 +40,6 @@ function loadCanvas(dataURL, module) {
     imgDataJS.data.set(jsBuffer);
     contextJS.putImageData(imgDataJS, 0, 0);
     console.timeEnd('Javascript');
-    // module.dealloc(mPtr, bufferLength);
   };
 
   imageObj.src = dataURL;
