@@ -3,3 +3,4 @@
 **/*.rs.bk
 /dist/
 /.idea/
+wa-perf.iml
