@@ -114,9 +114,16 @@ pub extern "C" fn mutate_pointer(data: *mut c_char, len: usize) {
 
 #[no_mangle]
 #[allow(unused_mut)]
-pub fn mandelbrot(buffer: *mut u8, len: usize, width: f64, height: f64, pixel_size: f64, x0: f64, y0: f64) {
+pub fn mandelbrot(buffer: *mut u8, len: usize, width: f64, height: f64,
+                  pixel_size: f64, x0: f64, y0: f64, start: f64, end: f64) {
     let mut buffer = unsafe { slice::from_raw_parts_mut(buffer, len) };
-    draw_mandelbrot(buffer, width as i64, height as i64, pixel_size, x0, y0);
+    if end != 0.0 {
+        draw_mandelbrot(buffer, width as i64, height as i64,
+                        pixel_size, x0, y0, start as i64, end as i64);
+    } else {
+        draw_mandelbrot(buffer, width as i64, height as i64,
+                        pixel_size, x0, y0, 0, width as i64);
+    }
 }
 
 fn generate_palette() -> Vec<Color> {
@@ -137,9 +144,10 @@ fn generate_palette() -> Vec<Color> {
     return palette;
 }
 
-pub fn draw_mandelbrot(buffer: &mut [u8], width: i64, height: i64, pixel_size: f64, x0: f64, y0: f64) {
+pub fn draw_mandelbrot(buffer: &mut [u8], width: i64, height: i64, pixel_size: f64, x0: f64,
+                       y0: f64, start: i64, end: i64) {
     let palette: Vec<Color> = generate_palette();
-    iproduct!((0..width), (0..height)).foreach(|(i, j)| {
+    iproduct!((start..end), (0..height)).foreach(|(i, j)| {
         let cr = x0 + pixel_size * (i as f64);
         let ci = y0 + pixel_size * (j as f64);
         let (mut zr, mut zi) = (0.0, 0.0);

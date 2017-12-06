@@ -1,7 +1,8 @@
 // global style
 require('./style.scss');
 const wrap = require('../wasm/wrap');
-const mandelbrot = require('./mandelbrot').default;
+import WAWorker from 'worker-loader!./worker/script.js';
+import {renderByJS, renderByWA} from './utils/mandelbrot';
 
 function loadCanvas(dataURL, module) {
   const canvasWA = document.getElementById('canvas1');
@@ -24,22 +25,32 @@ function loadCanvas(dataURL, module) {
     // render by WA
     let bufferLength = canvasWA.width * canvasWA.height * 4;
     let mPtr = module.alloc(bufferLength);
-    let buffer = new Uint8ClampedArray(module.memory.buffer, mPtr, bufferLength);
     console.time('Web Assembly');
-    module.mandelbrot(buffer.byteOffset, buffer.length, canvasWA.width, canvasWA.height, pixel_size, x0, y0);
+    let buffer = new Uint8ClampedArray(module.memory.buffer, mPtr, bufferLength);
+    renderByWA(module, buffer, canvasWA, pixel_size, x0, y0);
     imgDataWA.data.set(buffer);
     contextWA.putImageData(imgDataWA, 0, 0);
     console.timeEnd('Web Assembly');
     module.dealloc(mPtr, bufferLength);
 
+    const sab = new SharedArrayBuffer(1024);
+    const params = {buffer, sab, canvas: {width: canvasWA.width, height: canvasWA.height}};
+    let worker = new WAWorker();
+    worker.addEventListener('message', function (e) {
+
+      console.log(sab[0]);
+    });
+    worker.postMessage(params);
+
+
     // render by JS
-    let bufSize = canvasJS.width * canvasJS.height * 4;
+    /*let bufSize = canvasJS.width * canvasJS.height * 4;
     let jsBuffer = new Uint8ClampedArray(bufSize);
     console.time('Javascript');
-    mandelbrot(jsBuffer, canvasJS.width, canvasJS.height, pixel_size, x0, y0);
+    renderByJS(jsBuffer, canvasJS.width, canvasJS.height, pixel_size, x0, y0);
     imgDataJS.data.set(jsBuffer);
     contextJS.putImageData(imgDataJS, 0, 0);
-    console.timeEnd('Javascript');
+    console.timeEnd('Javascript');*/
   };
 
   imageObj.src = dataURL;
