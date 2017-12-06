@@ -1,5 +1,8 @@
 #[macro_use]
 extern crate itertools;
+extern crate util;
+
+use util::Color;
 
 use std::cmp;
 use itertools::Itertools;
@@ -110,18 +113,13 @@ pub extern "C" fn mutate_pointer(data: *mut c_char, len: usize) {
 }
 
 #[no_mangle]
+#[allow(unused_mut)]
 pub fn mandelbrot(buffer: *mut u8, len: usize, width: f64, height: f64, pixel_size: f64, x0: f64, y0: f64) {
     let mut buffer = unsafe { slice::from_raw_parts_mut(buffer, len) };
-    _mandelbrot(buffer, width as i64, height as i64, pixel_size, x0, y0);
+    draw_mandelbrot(buffer, width as i64, height as i64, pixel_size, x0, y0);
 }
 
-pub struct Color {
-    red: u8,
-    green: u8,
-    blue: u8
-}
-
-pub fn _generate_palette() -> Vec<Color> {
+fn generate_palette() -> Vec<Color> {
     let mut palette: Vec<Color> = vec![];
     let mut roffset = 24;
     let mut goffset = 16;
@@ -139,8 +137,8 @@ pub fn _generate_palette() -> Vec<Color> {
     return palette;
 }
 
-pub fn _mandelbrot(buffer: &mut [u8], width: i64, height: i64, pixel_size: f64, x0: f64, y0: f64) {
-    let palette: Vec<Color> = _generate_palette();
+pub fn draw_mandelbrot(buffer: &mut [u8], width: i64, height: i64, pixel_size: f64, x0: f64, y0: f64) {
+    let palette: Vec<Color> = generate_palette();
     iproduct!((0..width), (0..height)).foreach(|(i, j)| {
         let cr = x0 + pixel_size * (i as f64);
         let ci = y0 + pixel_size * (j as f64);

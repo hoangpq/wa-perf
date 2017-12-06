@@ -7,3 +7,6 @@ authors = ["hoangpq <pquochoang2007@gmail.com>"]
 lazy_static = "1.0"
 sha1 = "0.2.0"
 itertools = "*"
+
+[dependencies.util]
+path = "src/util"
