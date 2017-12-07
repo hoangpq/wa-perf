@@ -3,14 +3,5 @@
     "es2015",
     "stage-1"
   ],
-  "plugins": [
-    [
-      "transform-regenerator",
-      {
-        "asyncGenerators": false,
-        "generators": true,
-        "async": false
-      }
-    ]
-  ]
+  "plugins": []
 }

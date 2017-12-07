@@ -35,9 +35,15 @@ function calculate(cr, ci) {
   return Math.min(255, count);
 }
 
-export function renderByJS(buffer, width, height, pixel_size, x0, y0) {
+export function renderByJS(buffer, width, height, pixel_size, x0, y0, start = 0, end = 0) {
   generatePalette();
-  for (let i = 0; i < width; i++) {
+  let _start = 0;
+  let _end = width;
+  if (end !== 0) {
+    _start = start;
+    _end = end;
+  }
+  for (let i = _start; i < _end; i++) {
     for (let j = 0; j < height; j++) {
       let cr = x0 + pixel_size * i;
       let ci = y0 + pixel_size * j;
@@ -60,26 +66,4 @@ export function renderByJS(buffer, width, height, pixel_size, x0, y0) {
 
 export function renderByWA(module, buffer, canvas, pixel_size, x0, y0, start = 0, end = 0) {
   module.mandelbrot(buffer.byteOffset, buffer.length, canvas.width, canvas.height, pixel_size, x0, y0, start, end);
-}
-
-export function initWA(module) {
-  return fetch(module)
-    .then(response => response.arrayBuffer())
-    .then(bytes => WebAssembly.instantiate(bytes, {
-      env: {
-        memoryBase: 0,
-        tableBase: 0,
-        memory: new WebAssembly.Memory({
-          initial: 256,
-          maximum: 4096,
-        }),
-        table: new WebAssembly.Table({
-          initial: 0,
-          element: 'anyfunc'
-        })
-      }
-    }))
-    .then(results => {
-      return results.instance;
-    });
 }
