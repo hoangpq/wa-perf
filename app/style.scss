@@ -1,6 +1,7 @@
 .container {
   display: flex;
   flex: 1;
+  flex-direction: column;
   .canvas-container {
     display: flex;
     width: 600px;

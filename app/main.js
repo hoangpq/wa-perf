@@ -44,18 +44,58 @@ function renderByJs() {
 }
 
 
-console.time('Javascript');
+/*console.time('Javascript');
 renderByWorkers(imgDataJS, canvasJS, contextJS, () => {
   console.timeEnd('Javascript');
-});
+});*/
+
+const waVideo = document.getElementById('waVideo');
+const caVideo = document.getElementById('waCanvas');
+const caContext = caVideo.getContext('2d');
 
 initWA('hello.wasm')
   .then(instance => {
     const module = instance.exports;
     // const str = "hello";
     // const mutatedStr = mutateString(module, str);
-    loadCanvas('./images.jpeg', module);
+    // loadCanvas('./images.jpeg', module);
+    // load video
+    window.module = module;
+    waVideo.onloadeddata = function () {
+      // console.log('wtf');
+      // console.log('loaded');
+      caVideo.setAttribute('height', waVideo.videoHeight + 'px');
+      caVideo.setAttribute('width', waVideo.videoWidth + 'px');
+      draw();
+    };
+    waVideo.src = 'assets/vid.mp4';
   });
+
+function grayScale(pixels, context) {
+  const length = pixels.data.length;
+  const module = window.module;
+  let ptr = module.alloc(length);
+  let buffer = new Uint8ClampedArray(module.memory.buffer, ptr, length);
+  module.gray_scale(buffer.byteOffset, buffer.length);
+  pixels.data.set(buffer);
+
+  console.log(pixels.data.slice(0, 4));
+
+  // context.putImageData(pixels, 0, 0);
+  module.dealloc(ptr, length);
+}
+
+function draw() {
+  if (waVideo.paused) return false;
+  caContext.drawImage(waVideo, 0, 0);
+  let pixels = caContext.getImageData(0, 0, waVideo.videoWidth, waVideo.videoHeight);
+
+  console.log(pixels.data.slice(0, 4));
+
+  // caContext.putImageData(pixels, 0, 0);
+  grayScale(pixels, caContext);
+  // requestAnimationFrame(draw);
+}
 
 function mutateString(module, str) {
   const ptr = newString(module, str, str.length);

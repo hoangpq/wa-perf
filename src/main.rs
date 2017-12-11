@@ -181,7 +181,24 @@ pub fn draw_mandelbrot(buffer: &mut [u8], width: i64, height: i64, pixel_size: f
     });
 }
 
-// This is the `main` thread
-fn main() {
-    println!("Hello World from Rust");
+fn _gray_scale(buffer: &mut [u8], len: usize) {
+    let mut i: usize = 0;
+    while i < len {
+        let r: u8 = buffer[i];
+        let a: u8 = buffer[i + 3];
+        buffer[i] = r;
+        buffer[i + 1] = r;
+        buffer[i + 2] = r;
+        buffer[i + 3] = a;
+        i += 4
+    }
 }
+
+#[no_mangle]
+#[allow(unused_mut)]
+pub fn gray_scale(buffer: *mut u8, len: usize) {
+    let mut buffer = unsafe { slice::from_raw_parts_mut(buffer, len) };
+    _gray_scale(buffer, len)
+}
+
+fn main() {}

@@ -1,13 +1,14 @@
-<html>
+<!DOCTYPE html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
+    <title>Web Assembly</title>
 </head>
 <body>
 <div class="container">
+    <div class="video-container">
+        <canvas id="waCanvas" width="720" height="486" style="border: 1px solid black;"></canvas>
+        <video id="waVideo" loop="false" autoplay src="" type="video/mp4" style="display: none;"></video>
+    </div>
     <div class="canvas-container">
         <div class="canvas-holder">
             Web Assembly
@@ -18,7 +19,7 @@
             <canvas id="canvas2" width="600" height="400" style="border: solid 1px#233;"></canvas>
         </div>
     </div>
+    <script type="text/javascript" src="dist/bundle.js"></script>
 </div>
-<script type="text/javascript" src="dist/bundle.js"></script>
 </body>
 </html>

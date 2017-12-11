@@ -5,8 +5,9 @@
     "init": "./init-project",
     "serve": "./cargo-build.sh && webpack-dev-server",
     "build": "./cargo-build.sh",
-    "webpack-build": "set NODE_ENV=production && webpack --progress --config webpack.prod.js",
-    "webpack-dev": "set NODE_ENV=staging && webpack-dev-server --config webpack.dev.js"
+    "webpack:build": "set NODE_ENV=production && webpack --progress --config webpack.prod.js",
+    "webpack:dev": "set NODE_ENV=staging && webpack-dev-server --config webpack.dev.js",
+    "webpack:serve": "cd app && http-serve -p 9090"
   },
   "main": "index.js",
   "repository": "https://github.com/hoangpq/wa-perf.git",
