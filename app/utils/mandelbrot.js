@@ -67,3 +67,7 @@ export function renderByJS(buffer, width, height, pixel_size, x0, y0, start = 0,
 export function renderByWA(module, buffer, canvas, pixel_size, x0, y0, start = 0, end = 0) {
   module.mandelbrot(buffer.byteOffset, buffer.length, canvas.width, canvas.height, pixel_size, x0, y0, start, end);
 }
+
+export function processVideo(module, buffer, filter) {
+  return module[filter](buffer.byteOffset, buffer.length);
+}

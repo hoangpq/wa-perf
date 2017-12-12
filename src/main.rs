@@ -198,7 +198,88 @@ fn _gray_scale(buffer: &mut [u8], len: usize) {
 #[allow(unused_mut)]
 pub fn gray_scale(buffer: *mut u8, len: usize) {
     let mut buffer = unsafe { slice::from_raw_parts_mut(buffer, len) };
-    _gray_scale(buffer, len)
+    _gray_scale(buffer, len);
+    /*let mut data;
+    unsafe {
+        data = Vec::from_raw_parts(
+            buffer as *mut u8,
+            len,
+            len
+        );
+        let mut i: usize = 0;
+        while i < len {
+            let r: u8 = buffer[i];
+            let a: u8 = buffer[i + 3];
+            buffer[i] = r;
+            buffer[i + 1] = r;
+            buffer[i + 2] = r;
+            buffer[i + 3] = a;
+            i += 4
+        }
+    }*/
+    // std::mem::forget(data);
 }
 
-fn main() {}
+#[no_mangle]
+#[allow(unused_mut)]
+pub fn invert(buffer: *mut u8, len: usize) {
+    let mut i: usize = 0;
+    unsafe {
+        let mut data = slice::from_raw_parts_mut(buffer, len);
+        while i < len {
+            data[i] = 255 - data[i];
+            data[i + 1] = 255 - data[i + 1];
+            data[i + 2] = 255 - data[i + 2];
+            i += 4
+        }
+        std::mem::forget(data)
+    }
+}
+
+#[no_mangle]
+#[allow(unused_mut)]
+pub fn multi_filter(buffer: *mut u8, len: usize) {
+    let mut i: usize = 0;
+    let width: usize = 720;
+    let filter_type: usize = 4;
+    let (mag, mult, adj) = (127, 2, 4);
+    unsafe {
+        let mut data = slice::from_raw_parts_mut(buffer, len);
+        while i < len {
+            if i % 4 != 3 {
+                // data[i] = mag + mult * data[i] - data[i + adj] - data[i + width * 4];
+                // data[i] = mag + mult * data[i] - data[i + 4];
+                let mut p1: u8 = 0;
+                let mut p2: u8 = 0;
+                if i + adj < len {
+                    p1 = data[i + adj];
+                }
+                if i + width * 4 < len {
+                    p2 = data[i + width * 4]
+                }
+                data[i] = mag + mult * data[i] - p1 - p2;
+            }
+            i += filter_type;
+        }
+        std::mem::forget(data)
+    }
+}
+
+#[no_mangle]
+pub fn fib_tco(n: i32) -> f64 {
+    fn _fib(n: i32, a: f64, b: f64) -> f64 {
+        if n == 0 {
+            return b;
+        } else {
+            return _fib(n - 1, a + b, a);
+        }
+    }
+    return _fib(n, 1 as f64, 0 as f64);
+}
+
+fn main() {
+    // let f: f64 = fib_tco(1200);
+    // println!("{:?}", f);
+    let a: usize = 3;
+    println!("{:?}", a % 4 != 3);
+}
