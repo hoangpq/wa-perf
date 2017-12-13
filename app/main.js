@@ -56,9 +56,7 @@ renderByWorkers(imgDataJS, canvasJS, contextJS, () => {
 
 function onFilterSelected(e) {
   e.stopPropagation();
-  const f = e.target.getAttribute('data-filter');
-  console.log(f);
-  selectedFilter = f;
+  selectedFilter = e.target.getAttribute('data-filter');
 }
 
 initWA('hello.wasm')
@@ -71,6 +69,7 @@ initWA('hello.wasm')
     window.module = module;
     window.sunset = bindLastArgs(window.module.multi_filter, 4, mag, mult, adj);
     window.analogtv = bindLastArgs(window.module.multi_filter, 7, mag, mult, adj);
+    window.emboss = bindLastArgs(window.module.multi_filter, 1, mag, mult, adj);
     waVideo.onloadeddata = function () {
       caVideo.setAttribute('height', waVideo.videoHeight + 'px');
       caVideo.setAttribute('width', waVideo.videoWidth + 'px');
