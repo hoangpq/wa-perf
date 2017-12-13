@@ -67,9 +67,9 @@ initWA('hello.wasm')
     // loadCanvas('./images.jpeg', module);
     // load video
     window.module = module;
-    window.sunset = bindLastArgs(window.module.multi_filter, 4, mag, mult, adj);
-    window.analogtv = bindLastArgs(window.module.multi_filter, 7, mag, mult, adj);
-    window.emboss = bindLastArgs(window.module.multi_filter, 1, mag, mult, adj);
+    window.sunset = bindLastArgs(module.multi_filter, 4, mag, mult, adj);
+    window.analogtv = bindLastArgs(module.multi_filter, 7, mag, mult, adj);
+    window.emboss = bindLastArgs(module.multi_filter, 1, mag, mult, adj);
     waVideo.onloadeddata = function () {
       caVideo.setAttribute('height', waVideo.videoHeight + 'px');
       caVideo.setAttribute('width', waVideo.videoWidth + 'px');
