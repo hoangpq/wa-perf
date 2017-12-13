@@ -1,13 +1,29 @@
-<!DOCTYPE html>
+<html>
 <head>
     <meta charset="UTF-8">
     <title>Web Assembly</title>
 </head>
 <body>
 <div class="container">
-    <div class="video-container">
-        <canvas id="waCanvas" width="720" height="486" style="border: 1px solid black;"></canvas>
-        <video id="waVideo" loop="false" autoplay src="" type="video/mp4" style="display: none;"></video>
+    <div class="filter-container">
+        <div class="video-container">
+            <canvas id="waCanvas" width="720" height="486" style="border: 1px solid black;"></canvas>
+            <video id="waVideo" loop="false" autoplay src="" type="video/mp4" style="display: none;"></video>
+        </div>
+        <div class="filter-list">
+            <ul>
+                <li>
+                    <div class="filter-item" data-filter="sunset">
+                        Sunset
+                    </div>
+                </li>
+                <li>
+                    <div class="filter-item" data-filter="analogtv">
+                        Analog TV
+                    </div>
+                </li>
+            </ul>
+        </div>
     </div>
     <div class="canvas-container" style="display: none;">
         <div class="canvas-holder">

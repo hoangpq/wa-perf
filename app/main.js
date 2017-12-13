@@ -1,8 +1,11 @@
 // global style
 require('./style.scss');
 import {initWA, renderByWorkers} from './utils';
-import {renderByJS, renderByWA, processVideo} from './utils/mandelbrot';
+import {renderByJS, renderByWA} from './utils/mandelbrot';
 
+const waVideo = document.getElementById('waVideo');
+const caVideo = document.getElementById('waCanvas');
+const caContext = caVideo.getContext('2d');
 const canvasWA = document.getElementById('canvas1');
 const contextWA = canvasWA.getContext('2d');
 const canvasJS = document.getElementById('canvas2');
@@ -13,6 +16,9 @@ const imgDataJS = contextJS.getImageData(0, 0, canvasJS.width, canvasJS.height);
 const pixel_size = 0.005;
 const x0 = -2.0;
 const y0 = -1.0;
+const mag = 127, mult = 2, adj = 4;
+let cw;
+let selectedFilter = 'sunset';
 
 function loadCanvas(dataURL, module) {
   // load image from data url
@@ -43,17 +49,17 @@ function renderByJs() {
   console.timeEnd('Javascript');
 }
 
-
 /*console.time('Javascript');
 renderByWorkers(imgDataJS, canvasJS, contextJS, () => {
   console.timeEnd('Javascript');
 });*/
 
-const waVideo = document.getElementById('waVideo');
-const caVideo = document.getElementById('waCanvas');
-const caContext = caVideo.getContext('2d');
-
-let cw;
+function onFilterSelected(e) {
+  e.stopPropagation();
+  const f = e.target.getAttribute('data-filter');
+  console.log(f);
+  selectedFilter = f;
+}
 
 initWA('hello.wasm')
   .then(instance => {
@@ -63,12 +69,19 @@ initWA('hello.wasm')
     // loadCanvas('./images.jpeg', module);
     // load video
     window.module = module;
+    window.sunset = bindLastArgs(window.module.multi_filter, 4, mag, mult, adj);
+    window.analogtv = bindLastArgs(window.module.multi_filter, 7, mag, mult, adj);
     waVideo.onloadeddata = function () {
       caVideo.setAttribute('height', waVideo.videoHeight + 'px');
       caVideo.setAttribute('width', waVideo.videoWidth + 'px');
       cw = caVideo.clientWidth;
+      // filter select event
+      document.querySelectorAll('.filter-item').forEach(function (node) {
+        node.addEventListener('click', onFilterSelected, false);
+      });
       draw();
     };
+    /* load video source */
     waVideo.src = 'assets/vid.mp4';
   });
 
@@ -79,17 +92,13 @@ function bindLastArgs(func, ...boundArgs) {
   }
 }
 
-let mag = 127, mult = 2, adj = 4;
-
-// let sunset = bindLastArgs(window.module.multi_filter, 4, mag, mult, adj);
-
 function grayScale(pixels, context) {
   const length = pixels.data.length;
   const module = window.module;
   let ptr = module.alloc(length);
   let buffer = new Uint8ClampedArray(module.memory.buffer, ptr, length);
   buffer.set(pixels.data);
-  module.multi_filter(buffer.byteOffset, buffer.length);
+  window[selectedFilter](buffer.byteOffset, buffer.length, cw);
   pixels.data.set(buffer);
   context.putImageData(pixels, 0, 0);
   module.dealloc(ptr, length);
@@ -119,10 +128,10 @@ function newString(module, str) {
   let ptr = module.alloc(len + 1);
   let memory = new Uint8Array(module.memory.buffer);
   for (let i = 0; i < len; i++) {
-    memory[ptr + i] = buffer[i]
+    memory[ptr + i] = buffer[i];
   }
   memory[ptr + len] = 0;
-  return ptr
+  return ptr;
 }
 
 function newArray(module, data) {
@@ -130,10 +139,10 @@ function newArray(module, data) {
   let ptr = module.alloc(len + 1);
   let memory = new Uint8Array(module.memory.buffer);
   for (let i = 0; i < len; i++) {
-    memory[ptr + i] = data[i]
+    memory[ptr + i] = data[i];
   }
   memory[ptr + len] = 0;
-  return ptr
+  return ptr;
 }
 
 function* getValue(module, ptr, size = 1) {
@@ -142,9 +151,9 @@ function* getValue(module, ptr, size = 1) {
   let limit = ptr + size;
   while (i < limit) {
     if (memory[ptr] === undefined) {
-      throw new Error("Tried to read undef mem")
+      throw new Error("Tried to read undef mem");
     }
     yield memory[i];
-    i += 1
+    i += 1;
   }
 }

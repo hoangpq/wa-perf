@@ -67,7 +67,7 @@ pub extern "C" fn filter(data: *mut u8, len: usize) -> i32 {
     let mut i = 0;
     unsafe {
         pixels = Vec::from_raw_parts(
-            data as *mut u8, len, len
+            data as *mut u8, len, len,
         );
         while i < len {
             pixels[i] = 255 - pixels[i];
@@ -87,7 +87,7 @@ pub fn mutate_array(data: *mut u32, len: usize) {
     let mut user_data;
     unsafe {
         user_data = Vec::from_raw_parts(
-            data as *mut u32, len, len
+            data as *mut u32, len, len,
         );
     }
     for i in 0..len {
@@ -103,7 +103,7 @@ pub extern "C" fn mutate_pointer(data: *mut c_char, len: usize) {
         user_data = Vec::from_raw_parts(
             data as *mut c_char,
             len,
-            len
+            len,
         );
         for i in 0..len {
             user_data[i] += 1;
@@ -199,25 +199,7 @@ fn _gray_scale(buffer: &mut [u8], len: usize) {
 pub fn gray_scale(buffer: *mut u8, len: usize) {
     let mut buffer = unsafe { slice::from_raw_parts_mut(buffer, len) };
     _gray_scale(buffer, len);
-    /*let mut data;
-    unsafe {
-        data = Vec::from_raw_parts(
-            buffer as *mut u8,
-            len,
-            len
-        );
-        let mut i: usize = 0;
-        while i < len {
-            let r: u8 = buffer[i];
-            let a: u8 = buffer[i + 3];
-            buffer[i] = r;
-            buffer[i + 1] = r;
-            buffer[i + 2] = r;
-            buffer[i + 3] = a;
-            i += 4
-        }
-    }*/
-    // std::mem::forget(data);
+    std::mem::forget(buffer);
 }
 
 #[no_mangle]
@@ -238,25 +220,20 @@ pub fn invert(buffer: *mut u8, len: usize) {
 
 #[no_mangle]
 #[allow(unused_mut)]
-pub fn multi_filter(buffer: *mut u8, len: usize) {
+pub fn multi_filter(buffer: *mut u8, len: usize, width: usize, filter_type: usize,
+                    mag: u8, mult: u8, adj: usize) {
     let mut i: usize = 0;
-    let width: usize = 720;
-    let filter_type: usize = 4;
-    let (mag, mult, adj) = (127, 2, 4);
+    // let width: usize = 720;
+    // let filter_type: usize = 4;
+    // let (mag, mult, adj) = (127, 2, 4);
     unsafe {
         let mut data = slice::from_raw_parts_mut(buffer, len);
         while i < len {
             if i % 4 != 3 {
-                // data[i] = mag + mult * data[i] - data[i + adj] - data[i + width * 4];
-                // data[i] = mag + mult * data[i] - data[i + 4];
                 let mut p1: u8 = 0;
                 let mut p2: u8 = 0;
-                if i + adj < len {
-                    p1 = data[i + adj];
-                }
-                if i + width * 4 < len {
-                    p2 = data[i + width * 4]
-                }
+                if i + adj < len { p1 = data[i + adj]; }
+                if i + width * 4 < len { p2 = data[i + width * 4]; }
                 data[i] = mag + mult * data[i] - p1 - p2;
             }
             i += filter_type;
@@ -266,7 +243,7 @@ pub fn multi_filter(buffer: *mut u8, len: usize) {
 }
 
 #[no_mangle]
-pub fn fib_tco(n: i32) -> f64 {
+pub fn fib(n: i32) -> f64 {
     fn _fib(n: i32, a: f64, b: f64) -> f64 {
         if n == 0 {
             return b;
@@ -278,8 +255,6 @@ pub fn fib_tco(n: i32) -> f64 {
 }
 
 fn main() {
-    // let f: f64 = fib_tco(1200);
-    // println!("{:?}", f);
-    let a: usize = 3;
-    println!("{:?}", a % 4 != 3);
+    let f: f64 = fib(1200);
+    println!("{:?}", f);
 }

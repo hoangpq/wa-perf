@@ -29,7 +29,6 @@ export function renderByWorkers(imgDataJS, canvasJS, contextJS, callback) {
   }
 }
 
-
 const waEnv = {
   memoryBase: 0,
   tableBase: 0,

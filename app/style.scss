@@ -13,4 +13,24 @@
       margin: 10px;
     }
   }
+  .filter-container {
+    display: flex;
+    flex-direction: row;
+    .filter-list {
+      ul {
+        list-style: none;
+        li {
+          margin-top: 5px;
+          .filter-item {
+            height: 30px;
+            width: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #223333;
+          }
+        }
+      }
+    }
+  }
 }
