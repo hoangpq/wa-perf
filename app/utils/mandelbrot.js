@@ -35,7 +35,14 @@ function calculate(cr, ci) {
   return Math.min(255, count);
 }
 
-export function renderByJS(buffer, width, height, pixel_size, x0, y0, start = 0, end = 0) {
+export function renderByJS(canvas, pixel_size, x0, y0, start = 0, end = 0) {
+  const context = canvas.getContext('2d');
+  const width = canvas.width;
+  const height = canvas.height;
+  const data = context.getImageData(0, 0, width, height)
+  const length = width * height * 4;
+  let buffer = new Uint8ClampedArray(length);
+  console.time('Javascript');
   generatePalette();
   let _start = 0;
   let _end = width;
@@ -50,24 +57,27 @@ export function renderByJS(buffer, width, height, pixel_size, x0, y0, start = 0,
       let pix = calculate(cr, ci);
       let idx = (j * width + i) * 4;
       let color = palette[pix];
-
-      /*buffer[idx] = 255 - pix;
-      buffer[idx + 1] = 255 - pix;
-      buffer[idx + 2] = 255 - pix;
-      buffer[idx + 3] = 255;*/
-
       buffer[idx] = color.r;
       buffer[idx + 1] = color.g;
       buffer[idx + 2] = color.b;
       buffer[idx + 3] = 255;
     }
   }
+  console.timeEnd('Javascript');
+  data.data.set(buffer);
+  context.putImageData(data, 0, 0);
 }
 
-export function renderByWA(module, buffer, canvas, pixel_size, x0, y0, start = 0, end = 0) {
+export function renderByWA(module, canvas, pixel_size, x0, y0, start = 0, end = 0) {
+  const context = canvas.getContext('2d');
+  let data = context.getImageData(0, 0, canvas.width, canvas.height);
+  const length = canvas.width * canvas.height * 4;
+  let ptr = module.alloc(length);
+  let buffer = new Uint8ClampedArray(module.memory.buffer, ptr, length);
+  console.time('Web Assembly');
   module.mandelbrot(buffer.byteOffset, buffer.length, canvas.width, canvas.height, pixel_size, x0, y0, start, end);
-}
-
-export function processVideo(module, buffer, filter) {
-  return module[filter](buffer.byteOffset, buffer.length);
+  module.dealloc(ptr, length);
+  data.data.set(buffer);
+  context.putImageData(data, 0, 0);
+  console.timeEnd('Web Assembly');
 }

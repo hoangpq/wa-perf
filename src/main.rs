@@ -223,9 +223,6 @@ pub fn invert(buffer: *mut u8, len: usize) {
 pub fn multi_filter(buffer: *mut u8, len: usize, width: usize, filter_type: usize,
                     mag: u8, mult: u8, adj: usize) {
     let mut i: usize = 0;
-    // let width: usize = 720;
-    // let filter_type: usize = 4;
-    // let (mag, mult, adj) = (127, 2, 4);
     unsafe {
         let mut data = slice::from_raw_parts_mut(buffer, len);
         while i < len {

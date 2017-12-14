@@ -1,87 +1,123 @@
 // global style
 require('./style.scss');
-import {initWA, renderByWorkers} from './utils';
+import {initWA, jsMultiFilter, renderByWorkers} from './utils';
 import {renderByJS, renderByWA} from './utils/mandelbrot';
 
 const waVideo = document.getElementById('waVideo');
-const caVideo = document.getElementById('waCanvas');
-const caContext = caVideo.getContext('2d');
+
+const waCanvas = document.getElementById('waCanvas');
+const waContext = waCanvas.getContext('2d');
+const jsCanvas = document.getElementById('jsCanvas');
+const jsContext = jsCanvas.getContext('2d');
+
 const canvasWA = document.getElementById('canvas1');
 const contextWA = canvasWA.getContext('2d');
 const canvasJS = document.getElementById('canvas2');
 const contextJS = canvasJS.getContext('2d');
-const imgDataWA = contextWA.getImageData(0, 0, canvasWA.width, canvasWA.height);
-const imgDataJS = contextJS.getImageData(0, 0, canvasJS.width, canvasJS.height);
 
-const pixel_size = 0.005;
-const x0 = -2.0;
-const y0 = -1.0;
+const filterList = document.querySelectorAll('.filter-item');
+const pixel_size = 0.005, x0 = -2.0, y0 = -1.0;
 const mag = 127, mult = 2, adj = 4;
-let cw;
-let selectedFilter = 'sunset';
+let cw, cw2, chart, selectedFilter = 'sunset',
+  t0 = 0, t1 = 0, t2 = 0, t3 = 0;
 
-function loadCanvas(dataURL, module) {
-  // load image from data url
-  const imageObj = new Image();
-  imageObj.onload = () => {
-    // render by WA
-    let length = canvasWA.width * canvasWA.height * 4;
-    let mPtr = module.alloc(length);
-    console.time('Web Assembly');
-    let buffer = new Uint8ClampedArray(module.memory.buffer, mPtr, length);
-    renderByWA(module, buffer, canvasWA, pixel_size, x0, y0);
-    imgDataWA.data.set(buffer);
-    contextWA.putImageData(imgDataWA, 0, 0);
-    console.timeEnd('Web Assembly');
-    module.dealloc(mPtr, length);
-  };
-  imageObj.src = dataURL;
+function fetchData() {
+  if (chart) {
+    const point = [+new Date() * 1000, t1 - t0];
+    const point2 = [+new Date() * 1000, t3 - t2];
+    let series = chart.series[0],
+      shift = series.data.length > 20;
+    chart.series[0].addPoint(point, true, shift);
+    chart.series[1].addPoint(point2, true, shift);
+  }
+  setTimeout(fetchData, 1000);
 }
 
-function renderByJs() {
-  // render by JS
-  let bufSize = canvasJS.width * canvasJS.height * 4;
-  let jsBuffer = new Uint8ClampedArray(bufSize);
-  console.time('Javascript');
-  renderByJS(jsBuffer, canvasJS.width, canvasJS.height, pixel_size, x0, y0);
-  imgDataJS.data.set(jsBuffer);
-  contextJS.putImageData(imgDataJS, 0, 0);
-  console.timeEnd('Javascript');
-}
+window.onload = function () {
+  chart = new Highcharts.Chart({
+    chart: {
+      renderTo: 'chart',
+      defaultSeriesType: 'spline',
+      events: {
+        load: fetchData,
+      }
+    },
+    title: {
+      text: 'Performance'
+    },
+    xAxis: {
+      type: 'datetime',
+      tickPixelInterval: 150,
+      maxZoom: 20 * 1000
+    },
+    yAxis: {
+      minPadding: 0.2,
+      maxPadding: 0.2,
+      title: {
+        text: 'ms',
+        margin: 80
+      }
+    },
+    series: [{
+      name: 'WA',
+      data: [],
+    }, {
+      name: 'JS',
+      data: [],
+    }]
+  });
+};
 
-/*console.time('Javascript');
-renderByWorkers(imgDataJS, canvasJS, contextJS, () => {
-  console.timeEnd('Javascript');
-});*/
+function resetFilter() {
+  filterList.forEach(function (item) {
+    item['className'] = 'filter-item';
+  });
+}
 
 function onFilterSelected(e) {
   e.stopPropagation();
+  resetFilter();
   selectedFilter = e.target.getAttribute('data-filter');
+  e.target.className = [e.target.className, 'filter-item-selected'].join(' ');
 }
 
 initWA('hello.wasm')
   .then(instance => {
     const module = instance.exports;
-    // const str = "hello";
-    // const mutatedStr = mutateString(module, str);
-    // loadCanvas('./images.jpeg', module);
-    // load video
+    // create some filter for web assembly
     window.module = module;
     window.sunset = bindLastArgs(module.multi_filter, 4, mag, mult, adj);
     window.analogtv = bindLastArgs(module.multi_filter, 7, mag, mult, adj);
     window.emboss = bindLastArgs(module.multi_filter, 1, mag, mult, adj);
-    waVideo.onloadeddata = function () {
-      caVideo.setAttribute('height', waVideo.videoHeight + 'px');
-      caVideo.setAttribute('width', waVideo.videoWidth + 'px');
-      cw = caVideo.clientWidth;
+    // create some filter for javascript
+    window.jssunset = bindLastArgs(jsMultiFilter, 4, mag, mult, adj);
+    window.jsanalogtv = bindLastArgs(jsMultiFilter, 7, mag, mult, adj);
+    window.jsemboss = bindLastArgs(jsMultiFilter, 1, mag, mult, adj);
+
+    // fire event when video loaded
+    waVideo.addEventListener('loadeddata', function () {
+      cw = waCanvas.clientWidth;
+      cw2 = jsCanvas.clientWidth;
       // filter select event
-      document.querySelectorAll('.filter-item').forEach(function (node) {
+      filterList.forEach(function (node) {
         node.addEventListener('click', onFilterSelected, false);
       });
       draw();
+      // filter select event
+      draw2();
+    });
+
+    waVideo.src = 'assets/nature.mp4';
+
+    // render mandelbrot
+    /*const img = new Image();
+    img.onload = () => {
+      // render by WA
+      renderByWA(module, canvasWA, pixel_size, x0, y0);
+      renderByJS(canvasJS, pixel_size, x0, y0);
     };
-    /* load video source */
-    waVideo.src = 'assets/vid.mp4';
+    img.src = './images.jpeg';*/
+
   });
 
 //to bind arguments in the right order
@@ -91,7 +127,12 @@ function bindLastArgs(func, ...boundArgs) {
   }
 }
 
-function grayScale(pixels, context) {
+function processVideoJS(pixels, context) {
+  window[`js${selectedFilter}`](waCanvas, pixels.data, cw);
+  context.putImageData(pixels, 0, 0);
+}
+
+function processVideoWA(pixels, context) {
   const length = pixels.data.length;
   const module = window.module;
   let ptr = module.alloc(length);
@@ -105,54 +146,20 @@ function grayScale(pixels, context) {
 
 function draw() {
   if (waVideo.paused) return false;
-  caContext.drawImage(waVideo, 0, 0);
-  let pixels = caContext.getImageData(0, 0, waVideo.videoWidth, waVideo.videoHeight);
-  grayScale(pixels, caContext);
+  t0 = performance.now();
+  waContext.drawImage(waVideo, 0, 0);
+  let pixels = waContext.getImageData(0, 0, waCanvas.width, waCanvas.height);
+  processVideoWA(pixels, waContext);
+  t1 = performance.now();
   requestAnimationFrame(draw);
 }
 
-function mutateString(module, str) {
-  const ptr = newString(module, str, str.length);
-  module.mutate_pointer(ptr, str.length);
-  const buffer = new Uint8Array(getValue(module, ptr, str.length));
-  module.dealloc_str(ptr);
-  const utf8Decoder = new TextDecoder("UTF-8");
-  return utf8Decoder.decode(buffer);
-}
-
-function newString(module, str) {
-  const utf8Encoder = new TextEncoder("UTF-8");
-  let buffer = utf8Encoder.encode(str);
-  let len = buffer.length;
-  let ptr = module.alloc(len + 1);
-  let memory = new Uint8Array(module.memory.buffer);
-  for (let i = 0; i < len; i++) {
-    memory[ptr + i] = buffer[i];
-  }
-  memory[ptr + len] = 0;
-  return ptr;
-}
-
-function newArray(module, data) {
-  let len = data.length;
-  let ptr = module.alloc(len + 1);
-  let memory = new Uint8Array(module.memory.buffer);
-  for (let i = 0; i < len; i++) {
-    memory[ptr + i] = data[i];
-  }
-  memory[ptr + len] = 0;
-  return ptr;
-}
-
-function* getValue(module, ptr, size = 1) {
-  let memory = new Uint8Array(module.memory.buffer);
-  let i = ptr;
-  let limit = ptr + size;
-  while (i < limit) {
-    if (memory[ptr] === undefined) {
-      throw new Error("Tried to read undef mem");
-    }
-    yield memory[i];
-    i += 1;
-  }
+function draw2() {
+  if (waVideo.paused) return false;
+  t2 = performance.now();
+  jsContext.drawImage(waVideo, 0, 0);
+  let pixels = waContext.getImageData(0, 0, jsCanvas.width, jsCanvas.height);
+  processVideoJS(pixels, jsContext);
+  t3 = performance.now();
+  requestAnimationFrame(draw2);
 }

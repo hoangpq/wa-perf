@@ -1,5 +1,51 @@
 import RenderWorker from './renderer.worker';
 
+function mutateString(module, str) {
+  const ptr = newString(module, str, str.length);
+  module.mutate_pointer(ptr, str.length);
+  const buffer = new Uint8Array(getValue(module, ptr, str.length));
+  module.dealloc_str(ptr);
+  const utf8Decoder = new TextDecoder("UTF-8");
+  return utf8Decoder.decode(buffer);
+}
+
+function newString(module, str) {
+  const utf8Encoder = new TextEncoder("UTF-8");
+  let buffer = utf8Encoder.encode(str);
+  let len = buffer.length;
+  let ptr = module.alloc(len + 1);
+  let memory = new Uint8Array(module.memory.buffer);
+  for (let i = 0; i < len; i++) {
+    memory[ptr + i] = buffer[i];
+  }
+  memory[ptr + len] = 0;
+  return ptr;
+}
+
+function newArray(module, data) {
+  let len = data.length;
+  let ptr = module.alloc(len + 1);
+  let memory = new Uint8Array(module.memory.buffer);
+  for (let i = 0; i < len; i++) {
+    memory[ptr + i] = data[i];
+  }
+  memory[ptr + len] = 0;
+  return ptr;
+}
+
+function* getValue(module, ptr, size = 1) {
+  let memory = new Uint8Array(module.memory.buffer);
+  let i = ptr;
+  let limit = ptr + size;
+  while (i < limit) {
+    if (memory[ptr] === undefined) {
+      throw new Error("Tried to read undef mem");
+    }
+    yield memory[i];
+    i += 1;
+  }
+}
+
 export function renderByWorkers(imgDataJS, canvasJS, contextJS, callback) {
   let bufSize = canvasJS.width * canvasJS.height * 4;
   const sharedBuffer = new SharedArrayBuffer(Uint8Array.BYTES_PER_ELEMENT * bufSize);
@@ -26,6 +72,24 @@ export function renderByWorkers(imgDataJS, canvasJS, contextJS, callback) {
       start,
       end,
     });
+  }
+}
+
+export function jsMultiFilter(canvas, data, width, filterType, mag, mult, adj) {
+  const length = data.length;
+  let i = 0;
+  while (i < length) {
+    if (i % 4 !== 3) {
+      let p1 = 0, p2 = 0;
+      if (i + adj < length) {
+        p1 = data[i + adj];
+      }
+      if (i + width * 4 < length) {
+        p2 = data[i + width * 4];
+      }
+      data[i] = mag + mult * data[i] - p1 - p2;
+    }
+    i += filterType;
   }
 }
 

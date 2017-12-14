@@ -17,19 +17,19 @@
     display: flex;
     flex-direction: row;
     .filter-list {
-      ul {
-        list-style: none;
-        li {
-          margin-top: 5px;
-          .filter-item {
-            height: 30px;
-            width: 100px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid #223333;
-          }
-        }
+      margin-left: 10px;
+      .filter-item {
+        margin-top: 5px;
+        cursor: pointer;
+        height: 30px;
+        width: 100px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #223333;
+      }
+      .filter-item-selected {
+        background: #C9B7AD;
       }
     }
   }
