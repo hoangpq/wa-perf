@@ -3,6 +3,9 @@ require('./style.scss');
 import {initWA, jsMultiFilter, renderByWorkers} from './utils';
 import {renderByJS, renderByWA} from './utils/mandelbrot';
 
+// workers
+const WaWorker = require('./utils/wasm.worker');
+
 const waVideo = document.getElementById('waVideo');
 
 const waCanvas = document.getElementById('waCanvas');
@@ -21,16 +24,15 @@ const mag = 127, mult = 2, adj = 4;
 let cw, cw2, chart, selectedFilter = 'sunset',
   t0 = 0, t1 = 0, t2 = 0, t3 = 0;
 
-function fetchData() {
-  if (chart) {
-    const point = [+new Date() * 1000, t1 - t0];
-    const point2 = [+new Date() * 1000, t3 - t2];
-    let series = chart.series[0],
-      shift = series.data.length > 20;
-    chart.series[0].addPoint(point, true, shift);
-    chart.series[1].addPoint(point2, true, shift);
-  }
-  setTimeout(fetchData, 1000);
+function visualizeData() {
+  const time = +new Date() * 200;
+  const point = [time, t1 - t0];
+  const point2 = [time, t3 - t2];
+  let series = chart.series[0],
+    shift = series.data.length > 20;
+  chart.series[0].addPoint(point, true, shift);
+  chart.series[1].addPoint(point2, true, shift);
+  setTimeout(visualizeData, 1000);
 }
 
 window.onload = function () {
@@ -38,12 +40,9 @@ window.onload = function () {
     chart: {
       renderTo: 'chart',
       defaultSeriesType: 'spline',
-      events: {
-        load: fetchData,
-      }
     },
     title: {
-      text: 'Performance'
+      text: 'Performance (Lower is better)'
     },
     xAxis: {
       type: 'datetime',
@@ -54,8 +53,15 @@ window.onload = function () {
       minPadding: 0.2,
       maxPadding: 0.2,
       title: {
-        text: 'ms',
+        text: 'Time (ms)',
         margin: 80
+      }
+    },
+    plotOptions: {
+      spline: {
+        marker: {
+          enabled: false
+        }
       }
     },
     series: [{
@@ -66,6 +72,7 @@ window.onload = function () {
       data: [],
     }]
   });
+  visualizeData();
 };
 
 function resetFilter() {
@@ -96,6 +103,11 @@ initWA('hello.wasm')
 
     // fire event when video loaded
     waVideo.addEventListener('loadeddata', function () {
+
+      // init worker
+      const waWorker = new WaWorker();
+      waWorker.postMessage({});
+
       cw = waCanvas.clientWidth;
       cw2 = jsCanvas.clientWidth;
       // filter select event
@@ -106,7 +118,6 @@ initWA('hello.wasm')
       // filter select event
       draw2();
     });
-
     waVideo.src = 'assets/nature.mp4';
 
     // render mandelbrot
