@@ -77,7 +77,7 @@ export function renderByWorkers(imgDataJS, canvasJS, contextJS, callback) {
   }
 }
 
-export function jsMultiFilter(canvas, data, width, filterType, mag, mult, adj) {
+export function jsMultiFilter(data, width, filterType, mag, mult, adj) {
   const length = data.length;
   let i = 0;
   while (i < length) {

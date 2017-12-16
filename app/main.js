@@ -32,7 +32,7 @@ function visualizeData() {
     shift = series.data.length > 20;
   chart.series[0].addPoint(point, true, shift);
   chart.series[1].addPoint(point2, true, shift);
-  setTimeout(visualizeData, 1000);
+  setTimeout(visualizeData, 200);
 }
 
 window.onload = function () {
@@ -103,11 +103,9 @@ initWA('hello.wasm')
 
     // fire event when video loaded
     waVideo.addEventListener('loadeddata', function () {
-
       // init worker
       const waWorker = new WaWorker();
       waWorker.postMessage({});
-
       cw = waCanvas.clientWidth;
       cw2 = jsCanvas.clientWidth;
       // filter select event
@@ -118,7 +116,8 @@ initWA('hello.wasm')
       // filter select event
       draw2();
     });
-    waVideo.src = 'assets/nature.mp4';
+    waVideo.src = 'assets/vid.mp4';
+    // waVideo.src = 'assets/nature.mp4';
 
     // render mandelbrot
     /*const img = new Image();
@@ -139,7 +138,7 @@ function bindLastArgs(func, ...boundArgs) {
 }
 
 function processVideoJS(pixels, context) {
-  window[`js${selectedFilter}`](waCanvas, pixels.data, cw);
+  window[`js${selectedFilter}`](pixels.data, cw);
   context.putImageData(pixels, 0, 0);
 }
 
@@ -169,7 +168,7 @@ function draw2() {
   if (waVideo.paused) return false;
   t2 = performance.now();
   jsContext.drawImage(waVideo, 0, 0);
-  let pixels = waContext.getImageData(0, 0, jsCanvas.width, jsCanvas.height);
+  let pixels = jsContext.getImageData(0, 0, jsCanvas.width, jsCanvas.height);
   processVideoJS(pixels, jsContext);
   t3 = performance.now();
   requestAnimationFrame(draw2);

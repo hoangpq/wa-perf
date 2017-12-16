@@ -15,7 +15,11 @@
   }
   .filter-container {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
+    .video-container {
+      display: flex;
+      flex-direction: row;
+    }
     .filter-list {
       margin-left: 10px;
       .filter-item {

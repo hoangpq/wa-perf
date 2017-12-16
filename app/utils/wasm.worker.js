@@ -4,6 +4,6 @@ self.addEventListener('message', (message) => {
   initWA('hello.wasm')
     .then((instance) => {
       const module = instance.exports;
-      console.log(module.fib_tco(120));
+      console.log(module.fib(120));
     });
 });
