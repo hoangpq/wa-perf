@@ -1,7 +1,12 @@
 {
   "presets": [
+    "env",
     "es2015",
-    "stage-1"
+    "stage-1",
+    "vue"
   ],
-  "plugins": []
+  "plugins": [
+    "transform-decorators-legacy",
+    "transform-vue-jsx"
+  ]
 }

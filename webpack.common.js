@@ -19,7 +19,7 @@ module.exports = {
         test: /\.js$/,
         use: 'babel-loader',
         include: [
-          path.resolve(__dirname, 'wasm'),
+          path.resolve(__dirname, 'app'),
         ],
         exclude: /node_modules/,
       },
@@ -36,8 +36,15 @@ module.exports = {
         use: {
           loader: 'worker-loader',
           options: {
-            publicPath: '/dist/'
+            publicPath: '/dist/',
           }
+        }
+      },
+      {
+        test: /\.vue$/,
+        loader: 'vue-loader',
+        options: {
+          esModule: true,
         }
       }
     ]
