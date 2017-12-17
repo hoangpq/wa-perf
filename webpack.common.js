@@ -13,6 +13,9 @@ module.exports = {
     path: path.join(__dirname, 'app/dist'),
     filename: 'bundle.js',
   },
+  resolve: {
+    extensions: ['*', '.js', '.vue', '.json'],
+  },
   module: {
     rules: [
       {
@@ -42,9 +45,11 @@ module.exports = {
       },
       {
         test: /\.vue$/,
-        loader: 'vue-loader',
-        options: {
-          esModule: true,
+        use: {
+          loader: 'vue-loader',
+          options: {
+            esModule: true,
+          }
         }
       }
     ]
