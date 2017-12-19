@@ -1,0 +1,1 @@
+{"version":3,"file":"0.bundle.js","sources":["webpack:///./app/components/views/Blue.js"],"sourcesContent":["export default {\n  functional: true,\n  name: 'Blue',\n  render: h => <h3 style={{color:'blue'}}>Blue</h3>\n}\n\n\n\n// WEBPACK FOOTER //\n// ./app/components/views/Blue.js"],"mappings":"AACA","sourceRoot":""}

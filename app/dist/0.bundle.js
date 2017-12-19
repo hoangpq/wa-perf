@@ -1,0 +1,2 @@
+webpackJsonp([0],{359:function(e,n,u){"use strict";Object.defineProperty(n,"__esModule",{value:!0}),n.default={functional:!0,name:"Blue",render:function(e){return e("h3",{style:{color:"blue"}},["Blue"])}}}});
+//# sourceMappingURL=0.bundle.js.map

@@ -1,8 +1,10 @@
 import Vue from 'vue';
 import App from './components/App';
+import { store } from './components/store';
 
 new Vue({
   el: '#app',
+  store: store,
   render: h => (
     <App>
       <div slot="header">

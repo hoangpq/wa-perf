@@ -22,10 +22,14 @@
 <script>
   require('./styles/app.scss');
   import Vue from 'vue';
-  import { Component, Prop } from 'vue-property-decorator';
+  import { mapState } from 'vuex';
+  import { Component, Prop, Watch } from 'vue-property-decorator';
   import Settings from './Settings';
   import Layout from './Layout';
   import { Header, Content, Footer, Cats } from './views';
+
+  // decorators
+  import { Getter, StoreWatch } from './decorators';
 
   // inline component
   const RedComp = {
@@ -76,5 +80,27 @@
     content = `
       Hello, <span style="color:red;">World</span>
     `;
+
+    /*@StoreWatch('cats')
+    onPropertyChange(val) {
+      console.log(this);
+      console.log(val);
+    }*/
+    @StoreWatch('cats')
+    onChildChange(val) {
+      console.log(val);
+      this.names = val;
+    }
+
+    created() {
+      this.$store.watch['cats'] = function(nVal) {
+        console.log(nVal);
+      }
+    }
+
+    mounted() {
+      this.$store.commit('addCats', ['meow', 'sam', 'max', 'milo'])
+    }
+
   }
 </script>
