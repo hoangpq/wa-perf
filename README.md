@@ -13,3 +13,5 @@ $ chmod +x ./init-project.sh && ./init-project.sh
 $ chmod +x ./cargo-build.sh && ./cargo-build.sh
 $ npm install && webpack-dev-server
 ```
+
+Live demo: [https://rust-webassembly.herokuapp.com](https://rust-webassembly.herokuapp.com)
